@@ -1,4 +1,10 @@
-fn main() {}
+use std::collections::HashMap;
+
+fn main() {
+    let (x, y) = day_3_part_1(347991);
+    println!("{}", x.abs() + y.abs());
+    day_3_part_2(347991);
+}
 
 // Beware, math ahead.
 //  Abandon all hope ye who enter here.
@@ -43,7 +49,8 @@ fn main() {}
 //  handled easily)
 //
 //  So to find the side we're working with, we first normalize
-//  the
+//  the ... I've forgotten what else to write and am tired,
+//  you get the gist. ayy lmao
 fn day_3_part_1(n: u64) -> (i64, i64) {
     let n = n as f64;
     let p = n.sqrt().ceil();
@@ -103,4 +110,129 @@ fn day_3_part_1(n: u64) -> (i64, i64) {
     };
 
     (x, y)
+}
+
+fn day_3_part_2(n: u64) -> u64 {
+    enum Direction {
+        North,
+        East,
+        South,
+        West,
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    struct Point {
+        x: i64,
+        y: i64,
+    }
+
+    let mut larger = 0;
+    let mut dir = Direction::East;
+    let mut dir_count = 1;
+    let mut spiral: HashMap<(i64, i64), u64> = HashMap::new();
+
+    spiral.insert((0, 0), 1);
+    let mut last_coords = Point { x: 0, y: 0 };
+
+    let mut d_count = dir_count;
+
+    loop {
+        let mut new_coords = last_coords;
+
+        match dir {
+            Direction::East => {
+                new_coords.x += 1;
+                d_count -= 1;
+
+                if d_count == 0 {
+                    dir = Direction::North;
+                }
+            }
+            Direction::North => {
+                new_coords.y += 1;
+                d_count -= 1;
+
+                if d_count == 0 {
+                    dir = Direction::West;
+                    dir_count += 1;
+                }
+            }
+            Direction::South => {
+                new_coords.y -= 1;
+                d_count -= 1;
+
+                if d_count == 0 {
+                    dir = Direction::East;
+                    dir_count += 1;
+                }
+            }
+            Direction::West => {
+                new_coords.x -= 1;
+                d_count -= 1;
+
+                if d_count == 0 {
+                    dir = Direction::South;
+                    //dir_count += 1;
+                }
+            }
+        };
+
+        if d_count == 0 {
+            d_count = dir_count;
+        }
+
+        let mut sum = 0;
+
+        let left = (new_coords.x - 1, new_coords.y);
+        let up = (new_coords.x, new_coords.y + 1);
+        let right = (new_coords.x + 1, new_coords.y);
+        let down = (new_coords.x, new_coords.y - 1);
+        let left_up = (new_coords.x - 1, new_coords.y + 1);
+        let left_down = (new_coords.x - 1, new_coords.y - 1);
+        let right_up = (new_coords.x + 1, new_coords.y + 1);
+        let right_down = (new_coords.x + 1, new_coords.y - 1);
+
+        if let Some(v) = spiral.get(&left) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&up) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&down) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&right) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&left_up) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&left_down) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&right_up) {
+            sum += v;
+        }
+
+        if let Some(v) = spiral.get(&right_down) {
+            sum += v;
+        }
+
+        if sum > n {
+            println!("{}", sum);
+            break;
+        } else {
+            spiral.insert((new_coords.x, new_coords.y), sum);
+        }
+
+        last_coords = new_coords;
+    }
+
+    larger
 }
