@@ -48,14 +48,14 @@ impl Comparison {
     }
 }
 
-struct Instruction {
-    reg_store: String,
+struct Instruction<'a> {
+    reg_store: &'a str,
     op: Operation,
     compare: Comparison,
-    reg_get: String,
+    reg_get: &'a str,
 }
 
-impl<'a> From<&'a str> for Instruction {
+impl<'a> From<&'a str> for Instruction<'a> {
     fn from(line: &'a str) -> Instruction {
         let components = line.split_whitespace().collect::<Vec<_>>();
 
@@ -79,9 +79,9 @@ impl<'a> From<&'a str> for Instruction {
             _ => unreachable!(),
         };
 
-        let reg_store = components[0].to_string();
+        let reg_store = components[0];
 
-        let reg_get = components[4].to_string();
+        let reg_get = components[4];
 
         Instruction {
             reg_store: reg_store,
@@ -93,12 +93,12 @@ impl<'a> From<&'a str> for Instruction {
 }
 
 #[derive(Default)]
-struct Machine {
-    instructions: Vec<Instruction>,
-    registers: HashMap<String, isize>,
+struct Machine<'a> {
+    instructions: Vec<Instruction<'a>>,
+    registers: HashMap<&'a str, isize>,
 }
 
-impl Machine {
+impl<'a> Machine<'a> {
     // Returns the greatest value encountered at any point
     fn run(&mut self) -> isize {
         let mut largest = 0;
@@ -108,7 +108,7 @@ impl Machine {
             // Gets the value of the register we need to compare
             let reg_get = {
                 *self.registers
-                    .entry(instruction.reg_get.clone())
+                    .entry(instruction.reg_get)
                     .or_insert_with(|| 0isize)
             };
 
